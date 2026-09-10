@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natcho Nation — Bestelsysteem</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#fff8e8;color:#111;padding-bottom:40px}
+header{background:#111;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:15px;box-shadow:0 4px 0 #f26b21}
+.brand{font-weight:950;font-size:22px;letter-spacing:.5px}.tabs{display:flex;gap:8px}.tabs button{border:2px solid #fff;background:transparent;color:#fff;border-radius:20px;padding:9px 15px;font-weight:900;cursor:pointer}.tabs .on{background:#ffd84d;color:#111}
+.container{max-width:1050px;margin:25px auto;padding:0 18px}.page{display:none}.page.on{display:block}h1{font-size:34px;margin:0 0 5px}.sub{color:#666;margin-top:0;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}.box{background:#fff;border:3px solid #111;border-radius:22px;padding:20px;box-shadow:5px 5px #111;margin-bottom:20px}h2{margin:0 0 15px;font-size:19px}
+.basegrid{display:grid;gap:10px}.base{background:#fff;border:3px solid #111;border-radius:16px;padding:16px;text-align:left;cursor:pointer}.base.sel{background:#ffd84d;box-shadow:3px 3px #111}.name{font-weight:950;font-size:18px}.price{font-weight:950;margin-top:5px}
+.tops{display:grid;grid-template-columns:1fr 1fr;gap:9px}.top{border:2px solid #ccc;border-radius:12px;padding:12px;display:flex;justify-content:space-between;gap:8px}.top small{color:#777}.top input{transform:scale(1.2)}
+.qty{display:flex;gap:12px;align-items:center}.qty button{width:42px;height:42px;border:2px solid #111;background:#fff;border-radius:10px;font-size:20px;font-weight:900;cursor:pointer}.qty strong{font-size:20px;min-width:25px;text-align:center}
+.summary{position:sticky;top:90px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:9px 0}.total{display:flex;justify-content:space-between;font-size:28px;font-weight:950;margin:18px 0}.primary,.done{width:100%;border:0;border-radius:13px;padding:15px;background:#f26b21;color:#fff;font-weight:950;cursor:pointer}.primary:disabled{opacity:.4;cursor:not-allowed}
+.connection{background:#111;color:#fff;border:3px solid #111;border-radius:18px;padding:16px;margin-bottom:20px}.connection strong{font-size:17px}.status{display:inline-block;border-radius:20px;padding:5px 10px;font-size:12px;font-weight:900;margin-left:7px}.online{background:#b9f5ce;color:#155724}.offline{background:#ffd2d2;color:#8a1c1c}.connect-row{display:flex;gap:8px;margin-top:12px}.connect-row input{flex:1;padding:12px;border:2px solid #fff;border-radius:10px;text-transform:uppercase;font-weight:900;font-size:16px}.connect-row button{padding:12px 15px;border:0;border-radius:10px;background:#ffd84d;color:#111;font-weight:950;cursor:pointer}.code{font-size:27px;font-weight:950;letter-spacing:2px;color:#ffd84d;margin:5px 0}
+.stats{display:flex;gap:10px;margin-bottom:18px}.stat{background:#fff;border:3px solid #111;border-radius:15px;padding:15px;flex:1}.stat small{color:#777;font-weight:800}.stat strong{display:block;font-size:25px;margin-top:5px}.orders{display:flex;flex-direction:column;gap:13px}.ticket{background:#ffd84d;border:3px solid #111;border-radius:18px;padding:17px}.head{display:flex;justify-content:space-between;font-weight:950;font-size:23px}.time{font-size:13px;color:#555}.ticket ul{margin:8px 0 15px}.done{background:#2f8f5b}.empty{background:#fff;border:3px dashed #aaa;border-radius:18px;padding:25px;text-align:center;color:#777}
+.confirm{background:#d7f8df;border:3px solid #2f8f5b;border-radius:15px;padding:15px;margin-bottom:20px;font-weight:800}.hidden{display:none!important}.admin{margin-top:30px;padding:12px;border:2px dashed #aaa;border-radius:14px;background:#fff}.reset-btn{margin-top:12px;width:100%;border:2px solid #b42318;border-radius:10px;padding:10px;background:#fff;color:#b42318;font-weight:900;cursor:pointer}
+@media(max-width:760px){header{align-items:flex-start;flex-direction:column}.tabs{width:100%}.tabs button{flex:1}.grid{grid-template-columns:1fr}.summary{position:static}.tops{grid-template-columns:1fr}.container{padding:0 12px}.connect-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="brand">NATCHO NATION</div><div class="tabs"><button class="on" onclick="mode('order',this)">BESTELLEN</button><button onclick="mode('kitchen',this)">KEUKEN</button></div></header>
+<div class="container">
+<section id="order" class="page on">
+  <div class="connection">
+    <div><strong>KEUKENVERBINDING</strong><span id="status" class="status offline">NIET GEKOPPELD</span></div>
+    <div class="connect-row"><input id="kitchenCode" placeholder="Vul keukencode in" maxlength="20"><button onclick="connectToKitchen()">KOPPELEN</button></div>
+    <div style="font-size:12px;color:#ddd;margin-top:8px">Vraag de code op het keukentoestel en vul die hier in.</div>
+  </div>
+  <div id="confirm" class="confirm hidden"></div>
+  <div class="grid">
+    <div>
+      <h1>Nieuwe bestelling</h1><p class="sub">Bestelling opnemen aan de toog.</p>
+      <div class="box"><h2>1. KIES JE BASIS</h2><div id="bases" class="basegrid"></div></div>
+      <div class="box"><h2>2. EXTRA TOPPINGS</h2><div id="tops" class="tops"></div></div>
+      <div class="box"><h2>3. AANTAL</h2><div class="qty"><button onclick="changeQty(-1)">−</button><strong id="qty">1</strong><button onclick="changeQty(1)">+</button><span>porties</span></div></div>
+    </div>
+    <div class="box summary"><h2>BESTELLING</h2><div id="summary">Kies een basis.</div><div class="total"><span>Totaal</span><span id="total">€0,00</span></div><button type="button" class="primary" id="placeButton" disabled onclick="submitOrder()">BESTELLING PLAATSEN</button></div>
+  </div>
+</section>
+<section id="kitchen" class="page">
+  <h1>Keuken</h1><p class="sub">Openstaande bestellingen voor de keuken.</p>
+  <div class="connection"><div><strong>JOUW KEUKENCODE</strong></div><div id="myCode" class="code">LADEN...</div><div style="font-size:12px;color:#ddd">Vul deze code in op de gsm's aan de toog.</div><div style="margin-top:8px"><span id="kitchenStatus" class="status offline" style="margin-left:0">KEUKEN STARTEN...</span><span id="deviceCount" style="font-size:12px;color:#ddd;margin-left:8px"></span></div></div>
+  <div class="stats"><div class="stat"><small>OPENSTAAND</small><strong id="count">0</strong></div><div class="stat"><small>OMZET VANDAAG</small><strong id="revenue">€0,00</strong></div><div class="stat"><small>BESTELLINGEN</small><strong id="totalCount">0</strong></div></div>
+  <div class="orders" id="orders"></div>
+  <details class="admin"><summary><b>Beheer verkoopmoment</b></summary><p style="color:#666;font-size:13px">Gebruik dit alleen wanneer een verkoopmoment volledig is afgelopen en je opnieuw vanaf ticket #001 wilt beginnen.</p><button class="reset-btn" onclick="resetSale()">RESET VERKOOPMOMENT</button></details>
+</section>
+</div>
+<script>
+const BASES=[['cheese','Cheesy Nacho\'s',5.50],['beef','Beef Nacho\'s',6.00],['cheesybeef','Cheesy Beef Nacho\'s',6.50]];
+const TOPS=[['guac','Guacamole',.75],['salsa','Salsa',.75],['onion','Pickled red onion',.50],['jalapeno','Jalapeño',.50],['sourcream','Zure room',.50]];
+let base=null,chosen=[],qty=1,peer=null,kitchenConn=null,kitchenConnections=new Map(),isKitchen=false,orders=[];
+const KITCHEN_ID_KEY='nn_kitchen_peer_id', ORDERS_KEY='nn_orders_shared', TICKET_KEY='nn_ticket_shared';
+function euro(n){return '€'+Number(n).toFixed(2).replace('.',',')}
+function randomCode(){return 'NACHO-'+Math.random().toString(36).substring(2,8).toUpperCase()}
+function loadKitchenState(){try{orders=JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]')}catch{orders=[]}}
+function saveKitchenState(){localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));localStorage.setItem(TICKET_KEY,String(Math.max(0,...orders.map(o=>Number(o.ticket)||0))))}
+function draw(){
+ document.getElementById('bases').innerHTML=BASES.map(x=>`<button class="base ${base&&base[0]===x[0]?'sel':''}" onclick="pick('${x[0]}')"><div class="name">${x[1]}</div><div class="price">${euro(x[2])}</div></button>`).join('');
+ document.getElementById('tops').innerHTML=TOPS.map(x=>`<label class="top"><span><input type="checkbox" ${chosen.includes(x[0])?'checked':''} onchange="toggle('${x[0]}')"> ${x[1]}</span><small>+ ${euro(x[2])}</small></label>`).join('');
+ document.getElementById('qty').textContent=qty;summaryDraw();
+}
+function pick(id){base=BASES.find(x=>x[0]===id);draw()}
+function toggle(id){chosen.includes(id)?chosen=chosen.filter(x=>x!==id):chosen.push(id);summaryDraw()}
+function changeQty(n){qty=Math.max(1,qty+n);document.getElementById('qty').textContent=qty;summaryDraw()}
+function unit(){return base?base[2]+TOPS.filter(x=>chosen.includes(x[0])).reduce((a,x)=>a+x[2],0):0}
+function summaryDraw(){const btn=document.getElementById('placeButton');if(!base){document.getElementById('summary').innerHTML='Kies een basis.';document.getElementById('total').textContent=euro(0);btn.disabled=true;return}let ts=TOPS.filter(x=>chosen.includes(x[0]));document.getElementById('summary').innerHTML=`<div class="row"><b>${base[1]}</b><span>${euro(base[2])}</span></div>`+ts.map(x=>`<div class="row"><span>${x[1]}</span><span>+ ${euro(x[2])}</span></div>`).join('')+`<div class="row"><span>Aantal</span><b>${qty}</b></div>`;document.getElementById('total').textContent=euro(unit()*qty);btn.disabled=false}
+function mode(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));btn.classList.add('on');if(id==='kitchen'){startKitchen();}else{stopKitchenHost()}}
+function startKitchen(){isKitchen=true;loadKitchenState();if(peer){renderKitchen();return}let saved=localStorage.getItem(KITCHEN_ID_KEY);let id=saved||randomCode();localStorage.setItem(KITCHEN_ID_KEY,id);document.getElementById('myCode').textContent=id;peer=new Peer(id);peer.on('open',()=>{document.getElementById('kitchenStatus').className='status online';document.getElementById('kitchenStatus').textContent='KEUKEN ONLINE';});peer.on('connection',c=>{kitchenConnections.set(c.connectionId,c);document.getElementById('deviceCount').textContent=`• ${kitchenConnections.size} toestel(len) verbonden`;c.on('open',()=>{kitchenConnections.set(c.connectionId,c);c.send({type:'STATE',orders});updateDeviceCount()});c.on('data',data=>handleKitchenData(c,data));c.on('close',()=>{kitchenConnections.delete(c.connectionId);updateDeviceCount()});c.on('error',()=>{kitchenConnections.delete(c.connectionId);updateDeviceCount()})});peer.on('error',err=>{console.error(err);document.getElementById('kitchenStatus').className='status offline';document.getElementById('kitchenStatus').textContent='VERBINDINGSFOUT';});renderKitchen()}
+function updateDeviceCount(){document.getElementById('deviceCount').textContent=`• ${kitchenConnections.size} toestel(len) verbonden`}
+function stopKitchenHost(){isKitchen=false}
+function connectToKitchen(){const code=document.getElementById('kitchenCode').value.trim().toUpperCase();if(!code)return alert('Vul eerst de keukencode in.');if(!peer)peer=new Peer();document.getElementById('status').className='status offline';document.getElementById('status').textContent='VERBINDEN...';if(kitchenConn)try{kitchenConn.close()}catch(e){}kitchenConn=peer.connect(code,{reliable:true});kitchenConn.on('open',()=>{document.getElementById('status').className='status online';document.getElementById('status').textContent='VERBONDEN MET KEUKEN';});kitchenConn.on('data',data=>handleOrderDeviceData(data));kitchenConn.on('close',()=>{document.getElementById('status').className='status offline';document.getElementById('status').textContent='VERBINDING VERBROKEN'});kitchenConn.on('error',()=>{document.getElementById('status').className='status offline';document.getElementById('status').textContent='KAN NIET VERBINDEN';alert('Kan niet verbinden met deze keukencode. Controleer de code op het keukentoestel.')})}
+function submitOrder(){if(!kitchenConn||!kitchenConn.open){return alert('Koppel eerst deze gsm aan de keuken.')}const data={requestId:Date.now().toString()+'-'+Math.random(),base:base[1],tops:TOPS.filter(x=>chosen.includes(x[0])).map(x=>x[1]),qty,total:unit()*qty,time:Date.now()};kitchenConn.send({type:'NEW_ORDER_REQUEST',order:data});const c=document.getElementById('confirm');c.innerHTML='⏳ Bestelling wordt naar de keuken gestuurd...';c.classList.remove('hidden')}
+function handleOrderDeviceData(data){if(data.type==='ORDER_ACCEPTED'){const c=document.getElementById('confirm');c.innerHTML=`🎟️ <strong>Bestelling #${data.order.ticket}</strong> geplaatst!<br>Geef dit nummer aan de klant (${euro(data.order.total)}).`;c.classList.remove('hidden');base=null;chosen=[];qty=1;draw();setTimeout(()=>c.classList.add('hidden'),10000)}if(data.type==='ORDER_REJECTED'){alert(data.message||'Bestelling kon niet worden geplaatst.')}}
+function handleKitchenData(conn,data){if(data.type==='NEW_ORDER_REQUEST'){const next=Number(localStorage.getItem(TICKET_KEY)||0)+1;const o={...data.order,ticket:next,open:true};orders.push(o);saveKitchenState();renderKitchen();conn.send({type:'ORDER_ACCEPTED',order:o});broadcast({type:'STATE',orders},conn)}if(data.type==='PING'){conn.send({type:'PONG'})}}
+function broadcast(data,except=null){for(const [id,c] of kitchenConnections){if(c!==except&&c.open){try{c.send(data)}catch(e){}}}}
+function renderKitchen(){const open=orders.filter(o=>o.open);document.getElementById('count').textContent=open.length;document.getElementById('revenue').textContent=euro(orders.reduce((a,o)=>a+Number(o.total||0),0));document.getElementById('totalCount').textContent=orders.length;document.getElementById('orders').innerHTML=open.length?open.map(o=>`<article class="ticket"><div class="head"><span>#${o.ticket}</span><span class="time">${new Date(o.time).toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'})}</span></div><p><b>${o.qty}× ${o.base}</b></p>${o.tops.length?'<ul>'+o.tops.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'<p>Geen extra toppings</p>'}<p><b>${euro(o.total)}</b></p><button class="done" onclick="done(${o.ticket})">✓ KLAAR</button></article>`).join(''):'<div class="empty">Geen openstaande bestellingen. 🎉</div>'}
+function done(ticket){const o=orders.find(x=>Number(x.ticket)===Number(ticket));if(!o)return;o.open=false;saveKitchenState();renderKitchen();broadcast({type:'ORDER_READY',ticket:Number(ticket),orders})}
+function resetSale(){if(!confirm('Weet je zeker dat je het huidige verkoopmoment wilt resetten? Alle bestellingen en omzet worden verwijderd en de ticketnummering begint opnieuw bij #001.'))return;orders=[];localStorage.removeItem(ORDERS_KEY);localStorage.removeItem(TICKET_KEY);renderKitchen();broadcast({type:'RESET',orders});alert('Verkoopmoment is gereset. De volgende bestelling krijgt ticket #001.')}
+// Wanneer een andere browser als keuken opent met een bestaand ID, PeerJS kan het ID bezet vinden. Daarom gebruikt elk nieuw keukentoestel een eigen code.
+loadKitchenState();draw();
+</script>
+</body>
+</html>
