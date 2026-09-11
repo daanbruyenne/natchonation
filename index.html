@@ -326,6 +326,45 @@
     .step { margin-bottom: 18px; }
   }
 </style>
+
+<style id="mobile-agenda-fix">
+@media (max-width: 700px) {
+  .agenda-card, .agenda-content, .event-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Keep all agenda text inside its card */
+  .agenda-card h1, .agenda-card h2, .agenda-card h3,
+  .agenda-content h1, .agenda-content h2, .agenda-content h3,
+  .event-card h1, .event-card h2, .event-card h3,
+  .agenda-card p, .agenda-content p, .event-card p,
+  .agenda-card .date, .agenda-card .time, .agenda-card .location {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    max-width: 100% !important;
+  }
+
+  /* Flyer: clean, contained, no distortion */
+  .agenda-card img, .agenda-content img, .event-card img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    margin: 14px auto 0 !important;
+    border-radius: 10px !important;
+  }
+
+  /* Prevent flex/grid children from forcing horizontal overflow */
+  .agenda-card > *, .agenda-content > *, .event-card > * {
+    min-width: 0 !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -381,7 +420,7 @@
       <h3>PIVA<br>KERSTMARKT</h3>
       <div class="event-details">
         <p><strong>17 december</strong></p>
-        <p>16:00 – 18:00</p>
+        <p>16:00 – 21:00</p>
         <p>Desguinlei 244, 2018 Antwerpen</p>
         <p>Gratis inkom</p>
       </div>
