@@ -200,16 +200,130 @@
     opacity: .65;
   }
 
+  .hamburger {
+    display: none;
+    background: none;
+    border: 0;
+    padding: 6px 0;
+    width: 34px;
+    cursor: pointer;
+  }
+  .hamburger span {
+    display: block;
+    height: 3px;
+    margin: 5px 0;
+    background: #111;
+    border-radius: 3px;
+  }
+
   @media (max-width: 1000px) {
     .cards { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 800px) {
-    .hero { grid-template-columns: 1fr; }
-    .event-feature { grid-template-columns: 1fr; padding: 24px; }
-    .event-info h3 { font-size: 44px; }
+    nav {
+      padding: 14px 5%;
+      gap: 0;
+      position: sticky;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .mini-logo {
+      font-size: 16px;
+      letter-spacing: -0.7px;
+      flex-shrink: 0;
+    }
+    .hamburger {
+      display: block;
+      margin-left: auto;
+    }
+    nav .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding-top: 10px;
+    }
+    nav .nav-links.open {
+      display: flex;
+    }
+    nav .nav-links a {
+      margin: 0;
+      padding: 13px 0;
+      font-size: 14px;
+      letter-spacing: .2px;
+      border-top: 1px solid rgba(17,17,17,.12);
+    }
+
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding: 45px 5% 55px;
+      gap: 30px;
+    }
+    .hero h1 {
+      font-size: clamp(44px, 14vw, 72px);
+      line-height: .88;
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+    .hero p {
+      font-size: 16px;
+      line-height: 1.45;
+    }
+    .btn {
+      padding: 13px 22px;
+      font-size: 15px;
+    }
+    .logo-card {
+      padding: 20px;
+      border-radius: 22px;
+      box-shadow: 7px 7px 0 #111;
+    }
+
+    section { padding: 55px 5%; }
+    .title {
+      font-size: clamp(34px, 10vw, 48px);
+      line-height: .95;
+      margin-bottom: 28px;
+    }
     .cards, .contact-grid { grid-template-columns: 1fr; }
-    nav a { margin-left: 12px; }
-    .mini-logo img { width: 112px; max-height: 38px; }
+    .card {
+      padding: 22px;
+      border-radius: 20px;
+    }
+    .card h3 { font-size: 24px; }
+    .card p { font-size: 15px; }
+
+    .contact-intro, .events-intro {
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+    .contact-box {
+      padding: 22px;
+      border-radius: 20px;
+    }
+    .contact-box p { font-size: 16px; }
+    .contact-box a { font-size: 17px; }
+
+    .event-feature {
+      grid-template-columns: 1fr;
+      gap: 25px;
+      padding: 20px;
+      border-radius: 24px;
+    }
+    .event-info h3 {
+      font-size: clamp(34px, 11vw, 50px);
+    }
+    .event-info p { font-size: 15px; }
+    .event-flyer { padding: 8px; border-radius: 15px; }
+  }
+
+  @media (max-width: 480px) {
+    nav { padding: 13px 5%; }
+    .hero h1 { font-size: 48px; }
+    .hero { padding-top: 38px; }
+    .step { margin-bottom: 18px; }
   }
 </style>
 </head>
@@ -217,7 +331,10 @@
 <body>
 <nav>
   <div class="mini-logo">NATCHO NATION</div>
-  <div>
+  <button class="hamburger" aria-label="Open navigatie" aria-expanded="false" onclick="toggleMobileNav()">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
     <a href="#home">HOME</a>
     <a href="#menu">MENU</a>
     <a href="#agenda">AGENDA</a>
@@ -306,5 +423,19 @@
 <footer>
   © 2026 NATCHO NATION — MINI-ONDERNEMING
 </footer>
+<script>
+function toggleMobileNav() {
+  const navLinks = document.querySelector('.nav-links');
+  const button = document.querySelector('.hamburger');
+  const open = navLinks.classList.toggle('open');
+  button.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelector('.nav-links').classList.remove('open');
+    document.querySelector('.hamburger').setAttribute('aria-expanded', 'false');
+  });
+});
+</script>
 </body>
 </html>
